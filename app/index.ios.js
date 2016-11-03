@@ -14,9 +14,6 @@ import {
   View
 } from 'react-native';
 
-
-import process from './app/config/process.polyfill'
-
 import App from './app'
 
 //import process from './app/config/process.polyfill'
