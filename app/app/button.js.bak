@@ -25,7 +25,7 @@ export default React.createClass({
 
 const styles = StyleSheet.create({
   button: {
-    flex: 1,
+    // flex: 1,
     backgroundColor: '#eee',
     paddingHorizontal: 20,
     paddingVertical: 10,

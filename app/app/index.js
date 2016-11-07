@@ -8,16 +8,12 @@ import {
 } from 'react-native';
 
 
-import Button from './button';
+import Button from './components/Button';
 
-import DDPClient from 'node-ddp-client';
+import ddpClient from './config/ddp';
 
-let ddpClient = new DDPClient({
-  host: '127.0.0.1',
-  // host: '192.168.1.3', // If using android use your device IP address
-  port: '3000',
-  // url: <your websocket url>
-});
+import LoggedIn from './loggedIn';
+import LoggedOut from './loggedOut';
 
 
 
@@ -25,69 +21,42 @@ export default React.createClass({
   getInitialState() {
     return {
       connected: false,
-      posts: {}
+      signedIn: false
     }
   },
 
   componentDidMount() {
     ddpClient.connect((err, wasReconnect) => {
       let connected = true;
-      if (err) {
-        connected = false
-      } else {
-        this.makeSubscription();
-        this.observePosts();
-      }
+      if (err) connected = false;
+
       this.setState({
         connected: connected
       });
     });
   },
 
-  // This is just extremely simple. We're replacing the entire state whenever the collection changes
-  observePosts() {
-    let observer = ddpClient.observe("posts");
-    observer.added = (id) => {
-      this.setState({
-        posts: ddpClient.collections.posts
-      })
-    }
-    observer.changed = (id, oldFields, clearedFields, newFields) => {
-      this.setState({
-        posts: ddpClient.collections.posts
-      })
-    }
-    observer.removed = (id, oldValue) => {
-      this.setState({
-        posts: ddpClient.collections.posts
-      })
-    }
-  },
 
-  makeSubscription() {
-    ddpClient.subscribe("posts", [], () => {
-      this.setState({
-        posts: ddpClient.collections.posts || {}
-      });
+
+  changedSignedIn(status = false) {
+    this.setState({
+      signedIn: status
     });
   },
 
-  handleIncrement() {
-    ddpClient.call('addPost');
-  },
-
-  handleDecrement() {
-    ddpClient.call('deletePost');
-  },
-
   render() {
-    var count = Object.keys(this.state.posts).length;
+    let body;
+
+    if (this.state.connected && this.state.signedIn) {
+      body = <LoggedIn changedSignedIn={this.changedSignedIn} />; // Note the change here as well
+    } else if (this.state.connected) {
+      body = <LoggedOut changedSignedIn={this.changedSignedIn} />;
+    }
+
     return (
       <View style={styles.container}>
         <View style={styles.center}>
-          <Text>Posts: {count}</Text>
-          <Button text="Increment" onPress={this.handleIncrement}/>
-          <Button text="Decrement" onPress={this.handleDecrement}/>
+          {body}
         </View>
       </View>
     );
